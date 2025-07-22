@@ -1,7 +1,7 @@
 use serde::{Serialize, Deserialize};
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct CollectionRefundResponse {
+pub struct CashOutResponse {
     pub data: Data,
     pub status: Status,
 }
@@ -13,7 +13,9 @@ pub struct Data {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Transaction {
+    pub reference_id: String,
     pub airtel_money_id: String,
+    pub id: String,
     pub status: String,
 }
 
@@ -22,5 +24,6 @@ pub struct Status {
     pub code: String,
     pub message: String,
     pub result_code: String,
+    pub response_code: String,
     pub success: bool,
 }

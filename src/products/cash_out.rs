@@ -1,5 +1,4 @@
-use crate::{authorization::get_valid_access_token, requests::cash_out_request_payment::CashOutRequestPayment, Country, Currency, Environment};
-
+use crate::{authorization::get_valid_access_token, requests::cash_out_request_payment::{CashOutRequestPayment, Subscriber, Transaction, AdditionalInfo}, responses::cash_out_response::CashOutResponse, Country, Currency, Environment};
 
 
 
@@ -33,39 +32,47 @@ impl CashOut {
 
     /*
         * Cash out
-        @return Result<(), Box<dyn std::error::Error>>
+        @param msisdn: String - subscriber's mobile number
+        @param amount: i32 - amount to cash out
+        @param transaction_id: String - unique transaction ID
+        @param reference: String - transaction reference
+        @param pin: String - PIN for the transaction
+        @param remark: String - transaction remark
+        @return Result<CashOutResponse, Box<dyn std::error::Error>>
      */
-    pub async fn cash_out(&self)  -> Result<(), Box<dyn std::error::Error>> {
+    pub async fn cash_out(&self, msisdn: String, amount: i32, transaction_id: String, reference: String, pin: String, remark: String) -> Result<CashOutResponse, Box<dyn std::error::Error>> {
         let client = reqwest::Client::new();
         let access_token = get_valid_access_token(self.environment,  &self.client_id, &self.client_secret).await?;
-        let req = client.post(format!("{} /standard/v1/cashout/", self.environment))
+        let req = client.post(format!("{}/standard/v1/cashout/", self.environment))
         .bearer_auth(access_token.access_token)
         .header("Content-Type", "application/json")
         .header("X-Country", self.country.to_string())
         .header("X-Currency", self.currency.to_string())
-        .header("x-signature", self.currency.to_string())
-        .header("x-key", self.currency.to_string());
-        // .body(
-        //     CashOutRequestPayment {
-        //         reference,
-        //         subscriber: Subscriber {
-        //             msisdn,
-        //         },
-        //         transaction: Transaction {
-        //             amount,
-        //             id,
-        //         },
-        //         additional_info: vec![AdditionalInfo {
-        //             key: "remark".to_string(),
-        //             value: "AIRTXXXXXX".to_string(),
-        //         }],
-        //         pin,
-        //     }
-        // );
+        .header("x-signature", "signature_placeholder")
+        .header("x-key", "api_key_placeholder")
+        .body(
+            CashOutRequestPayment {
+                reference,
+                subscriber: Subscriber {
+                    msisdn,
+                },
+                transaction: Transaction {
+                    amount,
+                    id: transaction_id,
+                },
+                additional_info: vec![AdditionalInfo {
+                    key: "remark".to_string(),
+                    value: remark,
+                }],
+                pin,
+            }
+        );
         let res = req.send().await?;
-        if  res.status().is_success() {
-            Ok(())
-        }else {
+        if res.status().is_success() {
+            let body = res.text().await?;
+            let response: CashOutResponse = serde_json::from_str(&body)?;
+            Ok(response)
+        } else {
             Err(Box::new(std::io::Error::new(std::io::ErrorKind::Other, res.text().await?)))
         }
     }
@@ -73,23 +80,23 @@ impl CashOut {
 
     /*
         * Get the status of a cash out
-        @param id: String
-        @return Result<(), Box<dyn std::error::Error>>
+        @param id: String - transaction ID to check status for
+        @return Result<CashOutResponse, Box<dyn std::error::Error>>
      */
-    pub async fn get_status(&self, id: String) -> Result<(), Box<dyn std::error::Error>> {
+    pub async fn get_status(&self, id: String) -> Result<CashOutResponse, Box<dyn std::error::Error>> {
         let client = reqwest::Client::new();
         let access_token = get_valid_access_token(self.environment,  &self.client_id, &self.client_secret).await?;
         let req = client.get(format!("{}/standard/v1/payments/{}", self.environment, id.to_string()))
         .bearer_auth(access_token.access_token)
         .header("Content-Type", "application/json")
         .header("X-Country", self.country.to_string())
-        .header("X-Currency", self.currency.to_string())
-        .header("x-signature", self.currency.to_string())
-        .header("x-key", self.currency.to_string());
+        .header("X-Currency", self.currency.to_string());
         let res = req.send().await?;
-        if  res.status().is_success() {
-            Ok(())
-        }else {
+        if res.status().is_success() {
+            let body = res.text().await?;
+            let response: CashOutResponse = serde_json::from_str(&body)?;
+            Ok(response)
+        } else {
             Err(Box::new(std::io::Error::new(std::io::ErrorKind::Other, res.text().await?)))
         }
     }

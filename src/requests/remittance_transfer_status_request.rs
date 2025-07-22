@@ -1,11 +1,20 @@
 
 use reqwest::Body;
 
-use crate::{Country, Currency};
+use crate::Country;
 
 pub struct RemittanceTransferStatusRequest {
     country: Country,
     ext_tr_id: String,
+}
+
+impl RemittanceTransferStatusRequest {
+    pub fn new(country: Country, ext_tr_id: String) -> Self {
+        RemittanceTransferStatusRequest {
+            country,
+            ext_tr_id,
+        }
+    }
 }
 
 impl From<RemittanceTransferStatusRequest> for Body {

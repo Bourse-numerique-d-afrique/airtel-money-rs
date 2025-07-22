@@ -1,0 +1,296 @@
+name: Performance Testing
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  schedule:
+    # Run performance tests weekly
+    - cron: '0 4 * * 0'
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  benchmark:
+    name: Performance Benchmarks
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Install Rust toolchain
+      uses: dtolnay/rust-toolchain@stable
+
+    - name: Cache cargo
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.cargo/registry
+          ~/.cargo/git
+          target
+        key: ${{ runner.os }}-cargo-bench-${{ hashFiles('**/Cargo.lock') }}
+
+    - name: Create benchmark directory
+      run: mkdir -p benches
+
+    - name: Create basic benchmarks
+      run: |
+        cat > benches/serialization.rs << 'EOF'
+        use criterion::{black_box, criterion_group, criterion_main, Criterion};
+        use airtel_rs::*;
+        use serde_json;
+
+        fn benchmark_request_serialization(c: &mut Criterion) {
+            c.bench_function("serialize_ussd_request", |b| {
+                let request = airtel_rs::requests::ussd_push_request::UssdPushRequest {
+                    reference: "test_reference".to_string(),
+                    subscriber: airtel_rs::requests::ussd_push_request::USSDSubscriberRequest {
+                        country: Country::Kenya,
+                        msisdn: "254700000000".to_string(),
+                        currency: Currency::KES,
+                    },
+                    transaction: airtel_rs::requests::ussd_push_request::USSDTransactionRequest {
+                        amount: 1000,
+                        country: Country::Kenya,
+                        currency: Currency::KES,
+                        id: "tx_123".to_string(),
+                    },
+                };
+                b.iter(|| {
+                    black_box(serde_json::to_string(&request).unwrap())
+                });
+            });
+        }
+
+        fn benchmark_response_deserialization(c: &mut Criterion) {
+            c.bench_function("deserialize_collection_response", |b| {
+                let json = r#"{
+                    "status": {
+                        "code": "200",
+                        "message": "SUCCESS",
+                        "result_code": "ESB000010",
+                        "response_code": "DP00800001006",
+                        "success": true
+                    },
+                    "data": {
+                        "transaction": {
+                            "id": "tx_123",
+                            "status": "SUCCESS"
+                        }
+                    }
+                }"#;
+                b.iter(|| {
+                    black_box(serde_json::from_str::<serde_json::Value>(&json).unwrap())
+                });
+            });
+        }
+
+        criterion_group!(benches, benchmark_request_serialization, benchmark_response_deserialization);
+        criterion_main!(benches);
+        EOF
+
+    - name: Add criterion to Cargo.toml
+      run: |
+        cat >> Cargo.toml << 'EOF'
+
+        [dev-dependencies]
+        criterion = "0.5"
+
+        [[bench]]
+        name = "serialization"
+        harness = false
+        EOF
+
+    - name: Run benchmarks
+      run: cargo bench --bench serialization
+
+    - name: Upload benchmark results
+      uses: actions/upload-artifact@v4
+      with:
+        name: benchmark-results
+        path: target/criterion/
+
+  memory-usage:
+    name: Memory Usage Analysis
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Install Rust toolchain
+      uses: dtolnay/rust-toolchain@stable
+
+    - name: Install valgrind
+      run: sudo apt-get install -y valgrind
+
+    - name: Build in release mode
+      run: cargo build --release --all-features
+
+    - name: Create memory test
+      run: |
+        cat > tests/memory_test.rs << 'EOF'
+        use airtel_rs::*;
+
+        #[test]
+        fn test_memory_usage() {
+            // Create multiple instances to test memory usage
+            let mut instances = Vec::new();
+            for i in 0..100 {
+                let airtel = AirtelMoney::new(
+                    Environment::Sandbox,
+                    Country::Kenya
+                );
+                instances.push(airtel);
+            }
+            
+            // Use the instances to prevent optimization
+            let total_countries: usize = instances.iter()
+                .map(|a| a.get_country() as usize)
+                .sum();
+            
+            assert!(total_countries > 0);
+        }
+        EOF
+
+    - name: Run memory test with valgrind
+      run: |
+        cargo test --release --test memory_test
+        valgrind --tool=memcheck --leak-check=full --show-leak-kinds=all \
+                 cargo test --release --test memory_test 2>&1 | tee valgrind_output.txt || true
+
+    - name: Upload memory analysis
+      uses: actions/upload-artifact@v4
+      with:
+        name: memory-analysis
+        path: valgrind_output.txt
+
+  compile-time:
+    name: Compile Time Analysis
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Install Rust toolchain
+      uses: dtolnay/rust-toolchain@stable
+
+    - name: Install cargo-llvm-lines
+      run: cargo install cargo-llvm-lines
+
+    - name: Clean build
+      run: cargo clean
+
+    - name: Measure compile time
+      run: |
+        echo "Full build compile time:"
+        time cargo build --release --all-features
+        
+        echo "Incremental compile time:"
+        touch src/lib.rs
+        time cargo build --release --all-features
+
+    - name: Analyze LLVM IR
+      run: cargo llvm-lines --release | head -50
+
+  size-analysis:
+    name: Binary Size Analysis
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Install Rust toolchain
+      uses: dtolnay/rust-toolchain@stable
+
+    - name: Install cargo-bloat
+      run: cargo install cargo-bloat
+
+    - name: Build release binary
+      run: cargo build --release --bin callback_server
+
+    - name: Analyze binary size
+      run: |
+        echo "Binary size:"
+        ls -lh target/release/callback_server
+        
+        echo "Size breakdown:"
+        cargo bloat --release --bin callback_server -n 20
+
+    - name: Create size report
+      run: |
+        echo "# Binary Size Report" > size_report.md
+        echo "" >> size_report.md
+        echo "## Total Size" >> size_report.md
+        ls -lh target/release/callback_server | awk '{print "- Size: " $5}' >> size_report.md
+        echo "" >> size_report.md
+        echo "## Top Dependencies by Size" >> size_report.md
+        echo '```' >> size_report.md
+        cargo bloat --release --bin callback_server -n 10 >> size_report.md
+        echo '```' >> size_report.md
+
+    - name: Upload size analysis
+      uses: actions/upload-artifact@v4
+      with:
+        name: size-analysis
+        path: size_report.md
+
+  performance-comparison:
+    name: Performance Comparison
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+    - name: Checkout main
+      uses: actions/checkout@v4
+      with:
+        ref: main
+        path: main
+
+    - name: Checkout PR
+      uses: actions/checkout@v4
+      with:
+        path: pr
+
+    - name: Install Rust toolchain
+      uses: dtolnay/rust-toolchain@stable
+
+    - name: Run benchmarks on main
+      run: |
+        cd main
+        # Add basic benchmark if criterion config exists
+        if grep -q criterion Cargo.toml; then
+          cargo bench > ../main_bench.txt 2>&1 || echo "No benchmarks in main" > ../main_bench.txt
+        else
+          echo "No benchmarks configured in main" > ../main_bench.txt
+        fi
+
+    - name: Run benchmarks on PR
+      run: |
+        cd pr
+        # Add basic benchmark if criterion config exists  
+        if grep -q criterion Cargo.toml; then
+          cargo bench > ../pr_bench.txt 2>&1 || echo "No benchmarks in PR" > ../pr_bench.txt
+        else
+          echo "No benchmarks configured in PR" > ../pr_bench.txt
+        fi
+
+    - name: Compare results
+      run: |
+        echo "# Performance Comparison" > comparison.md
+        echo "" >> comparison.md
+        echo "## Main Branch Results" >> comparison.md
+        echo '```' >> comparison.md
+        cat main_bench.txt >> comparison.md
+        echo '```' >> comparison.md
+        echo "" >> comparison.md
+        echo "## PR Branch Results" >> comparison.md
+        echo '```' >> comparison.md
+        cat pr_bench.txt >> comparison.md
+        echo '```' >> comparison.md
+
+    - name: Upload comparison
+      uses: actions/upload-artifact@v4
+      with:
+        name: performance-comparison
+        path: comparison.md

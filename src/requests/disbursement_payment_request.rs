@@ -3,6 +3,7 @@ use serde::{Serialize, Deserialize};
 #[doc(hidden)]
 use reqwest::Body;
 
+#[derive(Debug, Serialize, Deserialize)]
 pub struct DisbursementPaymentRequest {
     pub payee: Payee,
     pub reference: String,

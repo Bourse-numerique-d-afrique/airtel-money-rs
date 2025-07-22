@@ -4,6 +4,7 @@ pub mod ussd_push_request;
 pub mod remittance_eligibility_request;
 pub mod remittance_transfer_status_request;
 pub mod remittance_transfer_credit_request;
+pub mod remittance_refund_request;
 pub mod cash_in_payment_request;
 pub mod cash_out_request_payment;
 pub mod disbursement_payment_request;

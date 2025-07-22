@@ -1,7 +1,7 @@
 
 use reqwest::Body;
 
-use crate::{Country, Currency};
+use crate::Country;
 
 pub struct RemittanceRefundRequest {
     pub country: Country,

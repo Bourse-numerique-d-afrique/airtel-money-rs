@@ -19,6 +19,7 @@ use serde::{Serialize, Deserialize};
 use reqwest::Body;
 
 
+#[derive(Debug, Serialize, Deserialize)]
 pub struct CashOutRequestPayment {
     pub subscriber: Subscriber,
     pub transaction: Transaction,

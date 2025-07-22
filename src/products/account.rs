@@ -35,7 +35,7 @@ impl Account {
         @return Result<AccountBalanceResponse, Box<dyn std::error::Error>>
     
      */
-    async fn get_balance(&self) -> Result<AccountBalanceResponse, Box<dyn std::error::Error>> {
+    pub async fn get_balance(&self) -> Result<AccountBalanceResponse, Box<dyn std::error::Error>> {
         let token = get_valid_access_token(self.environment, &self.client_id, &self.client_secret).await?;
         let client = reqwest::Client::new();
         let res = client.get(format!("{}/standard/v1/users/balance", self.environment))
@@ -56,12 +56,14 @@ impl Account {
 }
 
 
+#[cfg(test)]
 mod tests {
     use std::env;
     use dotenv::dotenv;
     use super::*;
 
     #[tokio::test]
+    #[ignore = "requires API credentials"]
     async fn test_get_balance() {
         dotenv().ok();
         let client_id = env::var("AIRTEL_CLIENT_ID").expect("MTN_COLLECTION_URL must be set");

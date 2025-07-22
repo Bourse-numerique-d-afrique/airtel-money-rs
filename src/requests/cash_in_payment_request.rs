@@ -22,6 +22,7 @@ use serde::{Serialize, Deserialize};
 #[doc(hidden)]
 use reqwest::Body;
 
+#[derive(Debug, Serialize, Deserialize)]
 pub struct CashInPaymentRequest {
     pub subscriber: Subscriber,
     pub transaction: Transaction,
