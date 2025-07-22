@@ -2,7 +2,6 @@ use reqwest::Body;
 
 use crate::{Country, Currency};
 
-
 pub struct RemittanceTransferCreditRequest {
     pub amount: i32,
     pub country: Country,
@@ -21,4 +20,3 @@ impl From<RemittanceTransferCreditRequest> for Body {
         Body::from(t)
     }
 }
-

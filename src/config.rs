@@ -2,16 +2,16 @@
 use crate::{Country, Currency, Environment};
 
 /// Shared configuration for all Airtel Money product modules
-/// 
+///
 /// This struct contains the common configuration parameters needed
 /// by all product modules (Collection, Disbursement, etc.) to eliminate
 /// code duplication and provide a consistent configuration interface.
-/// 
+///
 /// # Examples
-/// 
+///
 /// ```rust
 /// use airtel_rs::{ProductConfig, Environment, Country, Currency};
-/// 
+///
 /// let config = ProductConfig::new(
 ///     Environment::Sandbox,
 ///     Country::Kenya,
@@ -36,20 +36,20 @@ pub struct ProductConfig {
 
 impl ProductConfig {
     /// Creates a new ProductConfig instance
-    /// 
+    ///
     /// # Arguments
-    /// 
+    ///
     /// * `environment` - The API environment to use
     /// * `country` - The target country for operations
     /// * `currency` - The currency for transactions
     /// * `client_id` - OAuth2 client ID
     /// * `client_secret` - OAuth2 client secret
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// ```rust
     /// use airtel_rs::{ProductConfig, Environment, Country, Currency};
-    /// 
+    ///
     /// let config = ProductConfig::new(
     ///     Environment::Sandbox,
     ///     Country::Kenya,
@@ -75,12 +75,12 @@ impl ProductConfig {
     }
 
     /// Returns the API base URL for the configured environment
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// ```rust
     /// use airtel_rs::{ProductConfig, Environment, Country, Currency};
-    /// 
+    ///
     /// let config = ProductConfig::new(
     ///     Environment::Sandbox,
     ///     Country::Kenya,
@@ -88,7 +88,7 @@ impl ProductConfig {
     ///     "client_id".to_string(),
     ///     "client_secret".to_string(),
     /// );
-    /// 
+    ///
     /// assert_eq!(config.base_url(), "https://openapiuat.airtel.africa");
     /// ```
     pub fn base_url(&self) -> &'static str {
@@ -99,14 +99,14 @@ impl ProductConfig {
     }
 
     /// Returns the country code as a string
-    /// 
+    ///
     /// Used for setting the X-Country header in API requests
     pub fn country_code(&self) -> String {
         self.country.to_string()
     }
 
     /// Returns the currency code as a string
-    /// 
+    ///
     /// Used for setting the X-Currency header in API requests
     pub fn currency_code(&self) -> String {
         self.currency.to_string()

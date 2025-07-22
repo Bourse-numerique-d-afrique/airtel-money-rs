@@ -1,4 +1,3 @@
-
 // {
 //     "subscriber": {
 //       "msisdn": "70***14"
@@ -17,7 +16,7 @@
 //     "pin": "KYJE***+o8="
 //   }
 
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
 #[doc(hidden)]
 use reqwest::Body;

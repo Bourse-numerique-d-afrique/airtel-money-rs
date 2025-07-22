@@ -15,9 +15,8 @@
 //       "reference": "10***2"
 //   }
 
-use serde::{Serialize, Deserialize};
 use reqwest::Body;
-
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct CashOutRequestPayment {

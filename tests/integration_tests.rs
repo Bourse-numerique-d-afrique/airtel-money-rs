@@ -1,4 +1,4 @@
-use airtel_rs::{AirtelMoney, Environment, Country, Currency};
+use airtel_rs::{AirtelMoney, Country, Currency, Environment};
 
 #[cfg(test)]
 mod tests {
@@ -75,14 +75,14 @@ mod tests {
     fn test_environments() {
         let sandbox = AirtelMoney::new(Environment::Sandbox, Country::Kenya);
         let production = AirtelMoney::new(Environment::Production, Country::Kenya);
-        
+
         assert_eq!(sandbox.environment, Environment::Sandbox);
         assert_eq!(production.environment, Environment::Production);
     }
 
     // Unit tests for request/response structures would go here
     // These tests verify the structure compilation without making actual API calls
-    
+
     #[test]
     fn test_country_display() {
         assert_eq!(format!("{}", Country::Kenya), "KE");
@@ -117,7 +117,7 @@ mod integration_tests {
         if let Some((client_id, client_secret)) = get_test_credentials() {
             let airtel = AirtelMoney::new(Environment::Sandbox, Country::Kenya);
             let _account = airtel.account(client_id, client_secret);
-            
+
             // This would test actual token generation
             // let balance = account.get_balance().await;
             // assert!(balance.is_ok());
@@ -130,7 +130,7 @@ mod integration_tests {
         if let Some((client_id, client_secret)) = get_test_credentials() {
             let airtel = AirtelMoney::new(Environment::Sandbox, Country::Kenya);
             let _collection = airtel.collection(client_id, client_secret);
-            
+
             // Test USSD push with sandbox credentials
             // let result = collection.ussd_push(
             //     "test_ref_123".to_string(),
@@ -148,7 +148,7 @@ mod integration_tests {
         if let Some((client_id, client_secret)) = get_test_credentials() {
             let airtel = AirtelMoney::new(Environment::Sandbox, Country::Kenya);
             let _disbursement = airtel.disbursement(client_id, client_secret);
-            
+
             // Test disbursement with sandbox credentials
             // let result = disbursement.disburse(
             //     "254700000000".to_string(),

@@ -1,28 +1,27 @@
 /// HTTP client module for Airtel Money API operations
-/// 
+///
 /// This module provides a centralized HTTP client with common functionality
 /// to eliminate code duplication across product modules and provide
 /// consistent request/response handling.
-
 use crate::{
-    config::ProductConfig,
-    errors::{AirtelResult, api_error, auth_error},
     authorization::get_valid_access_token,
+    config::ProductConfig,
+    errors::{api_error, auth_error, AirtelResult},
 };
 use reqwest::{Client, Response};
 use serde::{Deserialize, Serialize};
 
 /// Centralized HTTP client for Airtel Money API operations
-/// 
+///
 /// This client provides common functionality for all API requests,
 /// including authentication, header management, and response handling.
 /// It eliminates code duplication across product modules.
-/// 
+///
 /// # Examples
-/// 
+///
 /// ```rust
 /// use airtel_rs::{ApiClient, ProductConfig, Environment, Country, Currency};
-/// 
+///
 /// let config = ProductConfig::new(
 ///     Environment::Sandbox,
 ///     Country::Kenya,
@@ -30,7 +29,7 @@ use serde::{Deserialize, Serialize};
 ///     "client_id".to_string(),
 ///     "client_secret".to_string(),
 /// );
-/// 
+///
 /// let client = ApiClient::new(config);
 /// ```
 #[derive(Debug)]
@@ -43,16 +42,16 @@ pub struct ApiClient {
 
 impl ApiClient {
     /// Creates a new ApiClient instance
-    /// 
+    ///
     /// # Arguments
-    /// 
+    ///
     /// * `config` - Product configuration with credentials and settings
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// ```rust
     /// use airtel_rs::{ApiClient, ProductConfig, Environment, Country, Currency};
-    /// 
+    ///
     /// let config = ProductConfig::new(
     ///     Environment::Sandbox,
     ///     Country::Kenya,
@@ -60,7 +59,7 @@ impl ApiClient {
     ///     "client_id".to_string(),
     ///     "client_secret".to_string(),
     /// );
-    /// 
+    ///
     /// let client = ApiClient::new(config);
     /// ```
     pub fn new(config: ProductConfig) -> Self {
@@ -71,34 +70,34 @@ impl ApiClient {
     }
 
     /// Makes an authenticated GET request to the API
-    /// 
+    ///
     /// This method handles token retrieval, authentication headers,
     /// and common headers automatically.
-    /// 
+    ///
     /// # Arguments
-    /// 
+    ///
     /// * `endpoint` - API endpoint path (e.g., "/standard/v1/users/balance")
-    /// 
+    ///
     /// # Returns
-    /// 
+    ///
     /// Returns a Result containing the parsed response or an AirtelError
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// ```rust
     /// use airtel_rs::{ApiClient, ProductConfig, Environment, Country, Currency};
     /// use serde::{Deserialize, Serialize};
-    /// 
+    ///
     /// #[derive(Deserialize)]
     /// struct BalanceResponse {
     ///     data: BalanceData,
     /// }
-    /// 
+    ///
     /// #[derive(Deserialize)]
     /// struct BalanceData {
     ///     balance: String,
     /// }
-    /// 
+    ///
     /// async fn get_balance(client: &ApiClient) -> Result<BalanceResponse, AirtelError> {
     ///     client.get("/standard/v1/users/balance").await
     /// }
@@ -116,7 +115,7 @@ impl ApiClient {
         .map_err(|e| auth_error(&e.to_string()))?;
 
         let url = format!("{}{}", self.config.base_url(), endpoint);
-        
+
         let response = self
             .client
             .get(&url)
@@ -131,36 +130,36 @@ impl ApiClient {
     }
 
     /// Makes an authenticated POST request to the API
-    /// 
+    ///
     /// This method handles token retrieval, authentication headers,
     /// common headers, and JSON serialization automatically.
-    /// 
+    ///
     /// # Arguments
-    /// 
+    ///
     /// * `endpoint` - API endpoint path
     /// * `body` - Request body that implements Serialize
-    /// 
+    ///
     /// # Returns
-    /// 
+    ///
     /// Returns a Result containing the parsed response or an AirtelError
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// ```rust
     /// use airtel_rs::{ApiClient, ProductConfig, Environment, Country, Currency};
     /// use serde::{Deserialize, Serialize};
-    /// 
+    ///
     /// #[derive(Serialize)]
     /// struct PaymentRequest {
     ///     amount: i32,
     ///     msisdn: String,
     /// }
-    /// 
+    ///
     /// #[derive(Deserialize)]
     /// struct PaymentResponse {
     ///     transaction_id: String,
     /// }
-    /// 
+    ///
     /// async fn make_payment(
     ///     client: &ApiClient,
     ///     request: PaymentRequest
@@ -182,7 +181,7 @@ impl ApiClient {
         .map_err(|e| auth_error(&e.to_string()))?;
 
         let url = format!("{}{}", self.config.base_url(), endpoint);
-        
+
         let response = self
             .client
             .post(&url)
@@ -198,31 +197,31 @@ impl ApiClient {
     }
 
     /// Makes an authenticated POST request with custom headers
-    /// 
+    ///
     /// This method allows passing additional headers while still
     /// handling authentication and common headers automatically.
-    /// 
+    ///
     /// # Arguments
-    /// 
+    ///
     /// * `endpoint` - API endpoint path
     /// * `body` - Request body that implements Serialize
     /// * `additional_headers` - Vector of (key, value) header pairs
-    /// 
+    ///
     /// # Returns
-    /// 
+    ///
     /// Returns a Result containing the parsed response or an AirtelError
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// ```rust
     /// use airtel_rs::{ApiClient, ProductConfig, Environment, Country, Currency};
     /// use serde::{Deserialize, Serialize};
-    /// 
+    ///
     /// #[derive(Serialize)]
     /// struct SecureRequest {
     ///     amount: i32,
     /// }
-    /// 
+    ///
     /// async fn secure_operation(client: &ApiClient) -> Result<(), AirtelError> {
     ///     let headers = vec![
     ///         ("x-signature".to_string(), "signature_value".to_string()),
@@ -256,7 +255,7 @@ impl ApiClient {
         .map_err(|e| auth_error(&e.to_string()))?;
 
         let url = format!("{}{}", self.config.base_url(), endpoint);
-        
+
         let mut request_builder = self
             .client
             .post(&url)
@@ -276,17 +275,17 @@ impl ApiClient {
     }
 
     /// Handles HTTP response and converts to typed result
-    /// 
+    ///
     /// This private method provides consistent response handling
     /// across all HTTP methods, including error conversion and
     /// JSON deserialization.
-    /// 
+    ///
     /// # Arguments
-    /// 
+    ///
     /// * `response` - HTTP response from reqwest
-    /// 
+    ///
     /// # Returns
-    /// 
+    ///
     /// Returns a Result containing the parsed response or an AirtelError
     async fn handle_response<T>(&self, response: Response) -> AirtelResult<T>
     where
@@ -301,7 +300,7 @@ impl ApiClient {
             Ok(parsed_response)
         } else {
             let error_body = response.text().await.unwrap_or_default();
-            
+
             // Try to parse as JSON error response
             if let Ok(error_json) = serde_json::from_str::<serde_json::Value>(&error_body) {
                 let message = error_json
@@ -309,7 +308,7 @@ impl ApiClient {
                     .or_else(|| error_json.get("error_description"))
                     .and_then(|v| v.as_str())
                     .unwrap_or(&error_body);
-                
+
                 if status_code == 401 || message.to_lowercase().contains("unauthorized") {
                     Err(auth_error(message))
                 } else {
@@ -327,12 +326,12 @@ impl ApiClient {
     }
 
     /// Returns a reference to the client configuration
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// ```rust
     /// use airtel_rs::{ApiClient, ProductConfig, Environment, Country, Currency};
-    /// 
+    ///
     /// let config = ProductConfig::new(
     ///     Environment::Sandbox,
     ///     Country::Kenya,
@@ -340,10 +339,10 @@ impl ApiClient {
     ///     "client_id".to_string(),
     ///     "client_secret".to_string(),
     /// );
-    /// 
+    ///
     /// let client = ApiClient::new(config);
     /// let config_ref = client.config();
-    /// 
+    ///
     /// assert_eq!(config_ref.country, Country::Kenya);
     /// ```
     pub fn config(&self) -> &ProductConfig {
@@ -354,7 +353,7 @@ impl ApiClient {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{Environment, Country, Currency};
+    use crate::{Country, Currency, Environment};
 
     #[test]
     fn test_api_client_creation() {
@@ -390,7 +389,13 @@ mod tests {
             "test_secret".to_string(),
         );
 
-        assert_eq!(sandbox_config.base_url(), "https://openapiuat.airtel.africa");
-        assert_eq!(production_config.base_url(), "https://openapi.airtel.africa");
+        assert_eq!(
+            sandbox_config.base_url(),
+            "https://openapiuat.airtel.africa"
+        );
+        assert_eq!(
+            production_config.base_url(),
+            "https://openapi.airtel.africa"
+        );
     }
 }

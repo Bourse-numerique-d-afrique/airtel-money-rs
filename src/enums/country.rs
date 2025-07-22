@@ -1,7 +1,6 @@
-
 use core::fmt;
 
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum Country {
@@ -18,9 +17,8 @@ pub enum Country {
     Malawi,
     CongoB,
     Seychelles,
-    Nigeria
+    Nigeria,
 }
-
 
 impl fmt::Display for Country {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {

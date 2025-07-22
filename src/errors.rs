@@ -1,22 +1,21 @@
 /// Error handling module for the Airtel Money SDK
-/// 
+///
 /// This module provides custom error types to replace the generic
 /// `Box<dyn std::error::Error>` pattern and provide better error handling
 /// with more specific error information.
-
 use std::fmt;
 
 /// Main error type for Airtel Money SDK operations
-/// 
+///
 /// This enum covers all possible error scenarios that can occur
 /// when using the Airtel Money API, providing better error handling
 /// and debugging information.
-/// 
+///
 /// # Examples
-/// 
+///
 /// ```rust
 /// use airtel_rs::AirtelError;
-/// 
+///
 /// match some_api_call().await {
 ///     Ok(response) => println!("Success: {:?}", response),
 ///     Err(AirtelError::AuthenticationError { message }) => {
@@ -32,13 +31,13 @@ use std::fmt;
 pub enum AirtelError {
     /// HTTP request/response errors from reqwest
     HttpError(reqwest::Error),
-    
+
     /// API authentication/authorization errors
     AuthenticationError {
         /// Error message from the API
         message: String,
     },
-    
+
     /// API-specific errors with status codes
     ApiError {
         /// HTTP status code
@@ -46,28 +45,28 @@ pub enum AirtelError {
         /// Error message from the API
         message: String,
     },
-    
+
     /// JSON serialization/deserialization errors
     SerializationError(serde_json::Error),
-    
+
     /// Token-related errors (expired, invalid, etc.)
     TokenError {
         /// Token error description
         message: String,
     },
-    
+
     /// Network connectivity errors
     NetworkError {
         /// Network error description
         message: String,
     },
-    
+
     /// Invalid configuration errors
     ConfigurationError {
         /// Configuration error description
         message: String,
     },
-    
+
     /// Validation errors for request parameters
     ValidationError {
         /// Field that failed validation
@@ -135,15 +134,15 @@ impl From<serde_json::Error> for AirtelError {
 }
 
 /// Result type alias for Airtel Money SDK operations
-/// 
+///
 /// This type alias provides a convenient way to return results
 /// from SDK operations with the custom error type.
-/// 
+///
 /// # Examples
-/// 
+///
 /// ```rust
 /// use airtel_rs::{AirtelResult, AirtelError};
-/// 
+///
 /// async fn some_api_operation() -> AirtelResult<String> {
 ///     // API operation logic here
 ///     Ok("Success".to_string())
@@ -152,16 +151,16 @@ impl From<serde_json::Error> for AirtelError {
 pub type AirtelResult<T> = Result<T, AirtelError>;
 
 /// Helper function to create an authentication error
-/// 
+///
 /// # Arguments
-/// 
+///
 /// * `message` - The authentication error message
-/// 
+///
 /// # Examples
-/// 
+///
 /// ```rust
 /// use airtel_rs::errors::auth_error;
-/// 
+///
 /// let error = auth_error("Invalid credentials");
 /// ```
 pub fn auth_error(message: &str) -> AirtelError {
@@ -171,17 +170,17 @@ pub fn auth_error(message: &str) -> AirtelError {
 }
 
 /// Helper function to create an API error
-/// 
+///
 /// # Arguments
-/// 
+///
 /// * `status` - HTTP status code
 /// * `message` - Error message
-/// 
+///
 /// # Examples
-/// 
+///
 /// ```rust
 /// use airtel_rs::errors::api_error;
-/// 
+///
 /// let error = api_error(400, "Bad Request");
 /// ```
 pub fn api_error(status: u16, message: &str) -> AirtelError {
@@ -192,17 +191,17 @@ pub fn api_error(status: u16, message: &str) -> AirtelError {
 }
 
 /// Helper function to create a validation error
-/// 
+///
 /// # Arguments
-/// 
+///
 /// * `field` - The field that failed validation
 /// * `message` - Validation error message
-/// 
+///
 /// # Examples
-/// 
+///
 /// ```rust
 /// use airtel_rs::errors::validation_error;
-/// 
+///
 /// let error = validation_error("phone_number", "Invalid format");
 /// ```
 #[allow(dead_code)]

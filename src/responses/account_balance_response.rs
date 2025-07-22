@@ -1,6 +1,5 @@
-use serde::{Serialize, Deserialize};
 use crate::Currency;
-
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct AccountBalanceResponse {

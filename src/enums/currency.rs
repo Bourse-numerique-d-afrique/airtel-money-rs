@@ -1,6 +1,6 @@
 use core::fmt;
 
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum Currency {
