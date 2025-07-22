@@ -2,13 +2,13 @@
 
 <div align="center">
 
-[![Build Tests](https://github.com/ondonda/airtel_money_rs/actions/workflows/ci.yml/badge.svg)](https://github.com/ondonda/airtel_money_rs/actions/workflows/ci.yml)
+[![Build Tests](https://github.com/Bourse-numerique-d-afrique/airtel_money_rs/actions/workflows/ci.yml/badge.svg)](https://github.com/Bourse-numerique-d-afrique/airtel_money_rs/actions/workflows/ci.yml)
 [![Crates.io](https://img.shields.io/crates/v/airtel_rs.svg)](https://crates.io/crates/airtel_rs)
 [![MIT licensed](https://img.shields.io/badge/License-MIT-yellow.svg)](https://choosealicense.com/licenses/mit/)
 [![Docs](https://img.shields.io/badge/docs-yes-brightgreen.svg)](https://docs.rs/airtel_rs/)
-[![Security Audit](https://github.com/ondonda/airtel_money_rs/actions/workflows/security.yml/badge.svg)](https://github.com/ondonda/airtel_money_rs/actions/workflows/security.yml)
+[![Security Audit](https://github.com/Bourse-numerique-d-afrique/airtel_money_rs/actions/workflows/security.yml/badge.svg)](https://github.com/Bourse-numerique-d-afrique/airtel_money_rs/actions/workflows/security.yml)
 
-![Airtel Money logo](https://raw.githubusercontent.com/ondonda/airtel_money_rs/master/images/Airtel-Money-Logo-PNG-thumb.png)
+![Airtel Money logo](https://raw.githubusercontent.com/Bourse-numerique-d-afrique/airtel_money_rs/master/images/Airtel-Money-Logo-PNG-thumb.png)
 
 </div>
 
