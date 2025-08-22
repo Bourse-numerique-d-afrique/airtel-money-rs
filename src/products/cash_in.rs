@@ -90,10 +90,7 @@ impl CashIn {
             let response: CashInResponse = serde_json::from_str(&body)?;
             Ok(response)
         } else {
-            Err(Box::new(std::io::Error::new(
-                std::io::ErrorKind::Other,
-                res.text().await?,
-            )))
+            Err(Box::new(std::io::Error::other(res.text().await?)))
         }
     }
 
@@ -113,7 +110,7 @@ impl CashIn {
             .get(format!(
                 "{}/standard/v1/cashin/{}",
                 self.environment,
-                id.to_string()
+                id
             ))
             .bearer_auth(access_token.access_token)
             .header("Content-Type", "application/json")
@@ -125,10 +122,7 @@ impl CashIn {
             let response: CashInResponse = serde_json::from_str(&body)?;
             Ok(response)
         } else {
-            Err(Box::new(std::io::Error::new(
-                std::io::ErrorKind::Other,
-                res.text().await?,
-            )))
+            Err(Box::new(std::io::Error::other(res.text().await?)))
         }
     }
 }

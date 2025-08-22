@@ -59,13 +59,11 @@ impl Account {
         if res.status().is_success() {
             let body = res.text().await?;
             let balance: AccountBalanceResponse = serde_json::from_str(&body)?;
-            return Ok(balance);
+            Ok(balance)
+        } else {
+            let body = res.text().await?;
+            Err(Box::new(std::io::Error::other(body)))
         }
-        let body = res.text().await?;
-        return Err(Box::new(std::io::Error::new(
-            std::io::ErrorKind::Other,
-            body,
-        )));
     }
 }
 

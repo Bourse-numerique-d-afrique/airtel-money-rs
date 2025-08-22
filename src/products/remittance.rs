@@ -15,6 +15,17 @@ use crate::{
     Country, Currency, Environment,
 };
 
+/// Payer information for money transfer operations
+#[derive(Debug, Clone)]
+pub struct PayerInfo {
+    /// Payer's country
+    pub country: String,
+    /// Payer's first name
+    pub first_name: String,
+    /// Payer's last name
+    pub last_name: String,
+}
+
 pub struct Remittance {
     pub country: Country,
     pub currency: Currency,
@@ -89,10 +100,7 @@ impl Remittance {
             let response: RemittanceEligibilityResponse = serde_json::from_str(&body)?;
             Ok(response)
         } else {
-            Err(Box::new(std::io::Error::new(
-                std::io::ErrorKind::Other,
-                res.text().await?,
-            )))
+            Err(Box::new(std::io::Error::other(res.text().await?)))
         }
     }
 
@@ -128,10 +136,7 @@ impl Remittance {
             let response: RemittanceStatusResponse = serde_json::from_str(&body)?;
             Ok(response)
         } else {
-            Err(Box::new(std::io::Error::new(
-                std::io::ErrorKind::Other,
-                res.text().await?,
-            )))
+            Err(Box::new(std::io::Error::other(res.text().await?)))
         }
     }
 
@@ -140,9 +145,7 @@ impl Remittance {
        @param amount: i32 - amount to transfer
        @param ext_trid: String - external transaction reference ID
        @param msisdn: String - recipient's mobile number
-       @param payer_country: String - payer's country
-       @param payer_first_name: String - payer's first name
-       @param payer_last_name: String - payer's last name
+       @param payer_info: PayerInfo - payer information
        @param pin: String - PIN for authentication
        @return Result<RemittanceTransferResponse, Box<dyn std::error::Error>>
     */
@@ -151,9 +154,7 @@ impl Remittance {
         amount: i32,
         ext_trid: String,
         msisdn: String,
-        payer_country: String,
-        payer_first_name: String,
-        payer_last_name: String,
+        payer_info: PayerInfo,
         pin: String,
     ) -> Result<RemittanceTransferResponse, Box<dyn std::error::Error>> {
         let token =
@@ -173,9 +174,9 @@ impl Remittance {
                 currency: self.currency,
                 ext_trid,
                 msisdn,
-                payer_country,
-                payer_first_name,
-                payer_last_name,
+                payer_country: payer_info.country,
+                payer_first_name: payer_info.first_name,
+                payer_last_name: payer_info.last_name,
                 pin,
             })
             .send()
@@ -186,10 +187,7 @@ impl Remittance {
             let response: RemittanceTransferResponse = serde_json::from_str(&body)?;
             Ok(response)
         } else {
-            Err(Box::new(std::io::Error::new(
-                std::io::ErrorKind::Other,
-                res.text().await?,
-            )))
+            Err(Box::new(std::io::Error::other(res.text().await?)))
         }
     }
 
@@ -228,10 +226,7 @@ impl Remittance {
             let response: RemittanceRefundResponse = serde_json::from_str(&body)?;
             Ok(response)
         } else {
-            Err(Box::new(std::io::Error::new(
-                std::io::ErrorKind::Other,
-                res.text().await?,
-            )))
+            Err(Box::new(std::io::Error::other(res.text().await?)))
         }
     }
 }

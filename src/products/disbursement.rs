@@ -82,10 +82,7 @@ impl Disbursement {
             let response: DisbursementPaymentResponse = serde_json::from_str(&body)?;
             Ok(response)
         } else {
-            Err(Box::new(std::io::Error::new(
-                std::io::ErrorKind::Other,
-                res.text().await?,
-            )))
+            Err(Box::new(std::io::Error::other(res.text().await?)))
         }
     }
 
@@ -105,7 +102,7 @@ impl Disbursement {
             .get(format!(
                 "{}/standard/v1/disburse/{}",
                 self.environment,
-                id.to_string()
+                id
             ))
             .bearer_auth(access_token.access_token)
             .header("Accept", "*/*")
@@ -119,10 +116,7 @@ impl Disbursement {
             let response: DisbursementPaymentResponse = serde_json::from_str(&body)?;
             Ok(response)
         } else {
-            Err(Box::new(std::io::Error::new(
-                std::io::ErrorKind::Other,
-                res.text().await?,
-            )))
+            Err(Box::new(std::io::Error::other(res.text().await?)))
         }
     }
 }

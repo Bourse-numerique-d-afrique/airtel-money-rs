@@ -221,10 +221,7 @@ impl Collection {
             let response: CollectionUSSDResponse = serde_json::from_str(&body)?;
             Ok(response)
         } else {
-            Err(Box::new(std::io::Error::new(
-                std::io::ErrorKind::Other,
-                res.text().await?,
-            )))
+            Err(Box::new(std::io::Error::other(res.text().await?)))
         }
     }
 
@@ -301,10 +298,7 @@ impl Collection {
             let response: CollectionRefundResponse = serde_json::from_str(&body)?;
             Ok(response)
         } else {
-            Err(Box::new(std::io::Error::new(
-                std::io::ErrorKind::Other,
-                res.text().await?,
-            )))
+            Err(Box::new(std::io::Error::other(res.text().await?)))
         }
     }
 
@@ -395,10 +389,7 @@ impl Collection {
             let response: CollectionStatusResponse = serde_json::from_str(&body)?;
             Ok(response)
         } else {
-            Err(Box::new(std::io::Error::new(
-                std::io::ErrorKind::Other,
-                res.text().await?,
-            )))
+            Err(Box::new(std::io::Error::other(res.text().await?)))
         }
     }
 }

@@ -388,9 +388,11 @@ mod live_integration_tests {
                 TEST_AMOUNT,
                 ext_trid.clone(),
                 TEST_PHONE_NUMBER.to_string(),
-                "KE".to_string(),   // Payer country
-                "John".to_string(), // First name
-                "Doe".to_string(),  // Last name
+                airtel_rs::PayerInfo {
+                    country: "KE".to_string(),
+                    first_name: "John".to_string(),
+                    last_name: "Doe".to_string(),
+                },
                 pin,
             )
             .await;

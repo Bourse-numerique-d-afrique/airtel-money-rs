@@ -162,7 +162,7 @@ pub use products::cash_in::CashIn;
 pub use products::cash_out::CashOut;
 pub use products::collection::Collection;
 pub use products::disbursement::Disbursement;
-pub use products::remittance::Remittance;
+pub use products::remittance::{Remittance, PayerInfo};
 pub use requests::token_request::TokenRequest;
 pub use responses::token_response::TokenResponse;
 
@@ -246,10 +246,7 @@ mod authorization {
             });
             Ok(cloned)
         } else {
-            Err(Box::new(std::io::Error::new(
-                std::io::ErrorKind::Other,
-                res.text().await?,
-            )))
+            Err(Box::new(std::io::Error::other(res.text().await?)))
         }
     }
 
@@ -276,7 +273,7 @@ mod authorization {
         }
         let token: TokenResponse =
             create_access_token(environment, client_id, client_secret).await?;
-        return Ok(token);
+        Ok(token)
     }
 }
 
