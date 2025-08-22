@@ -25,7 +25,7 @@
 - [ ] Integration tests pass (`cargo test --test integration_tests`)
 - [ ] Mock tests pass (`cargo test --test mock_demo_tests`)
 - [ ] API integration tests pass (if applicable)
-- [ ] Callback server builds (`cargo build --bin callback_server`)
+- [ ] Callback server builds (`cd airtel_money_callback_server && cargo build`)
 - [ ] Documentation builds (`cargo doc`)
 - [ ] Clippy passes (`cargo clippy`)
 - [ ] Formatting is correct (`cargo fmt --check`)

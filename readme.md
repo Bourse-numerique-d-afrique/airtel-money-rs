@@ -146,9 +146,9 @@ The SDK includes a standalone callback server for handling Airtel Money webhook 
 # Install the callback server binary
 cargo install --path airtel_money_callback_server
 
-# Or run directly
+# Or build directly
 cd airtel_money_callback_server
-cargo run
+cargo build
 ```
 
 ### Usage
@@ -160,7 +160,8 @@ export CALLBACK_HOST=0.0.0.0
 export AIRTEL_WEBHOOK_SECRET=your_webhook_secret
 
 # Run the server
-airtel_money_callback_server
+cd airtel_money_callback_server
+cargo run
 ```
 
 ### Available Endpoints
