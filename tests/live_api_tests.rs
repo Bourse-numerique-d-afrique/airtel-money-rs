@@ -144,7 +144,7 @@ mod live_integration_tests {
                 println!("❌ USSD Push failed: {}", e);
                 // Don't panic immediately, log the error for analysis
                 println!("Error details: {}", e);
-                assert!(false, "USSD Push test failed: {}", e);
+                panic!("USSD Push test failed: {}", e);
             }
         }
     }
@@ -203,7 +203,7 @@ mod live_integration_tests {
             Err(e) => {
                 println!("❌ Disbursement failed: {}", e);
                 println!("Error details: {}", e);
-                assert!(false, "Disbursement test failed: {}", e);
+                panic!("Disbursement test failed: {}", e);
             }
         }
     }
@@ -263,7 +263,7 @@ mod live_integration_tests {
             Err(e) => {
                 println!("❌ Cash in failed: {}", e);
                 println!("Error details: {}", e);
-                assert!(false, "Cash in test failed: {}", e);
+                panic!("Cash in test failed: {}", e);
             }
         }
     }
@@ -323,7 +323,7 @@ mod live_integration_tests {
             Err(e) => {
                 println!("❌ Cash out failed: {}", e);
                 println!("Error details: {}", e);
-                assert!(false, "Cash out test failed: {}", e);
+                panic!("Cash out test failed: {}", e);
             }
         }
     }
@@ -367,7 +367,7 @@ mod live_integration_tests {
             Err(e) => {
                 println!("❌ Remittance eligibility check failed: {}", e);
                 println!("Error details: {}", e);
-                assert!(false, "Remittance eligibility test failed: {}", e);
+                panic!("Remittance eligibility test failed: {}", e);
             }
         }
     }
@@ -433,7 +433,7 @@ mod live_integration_tests {
             Err(e) => {
                 println!("❌ Money transfer credit failed: {}", e);
                 println!("Error details: {}", e);
-                assert!(false, "Remittance transfer test failed: {}", e);
+                panic!("Remittance transfer test failed: {}", e);
             }
         }
     }
@@ -487,7 +487,7 @@ mod live_integration_tests {
             }
             Err(e) => {
                 println!("❌ Could not create transaction for refund test: {}", e);
-                assert!(false, "Failed to create transaction for refund test: {}", e);
+                panic!("Failed to create transaction for refund test: {}", e);
             }
         }
     }
