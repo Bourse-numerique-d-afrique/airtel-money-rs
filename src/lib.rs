@@ -162,7 +162,7 @@ pub use products::cash_in::CashIn;
 pub use products::cash_out::CashOut;
 pub use products::collection::Collection;
 pub use products::disbursement::Disbursement;
-pub use products::remittance::{Remittance, PayerInfo};
+pub use products::remittance::{PayerInfo, Remittance};
 pub use requests::token_request::TokenRequest;
 pub use responses::token_response::TokenResponse;
 

@@ -107,11 +107,7 @@ impl CashOut {
         let access_token =
             get_valid_access_token(self.environment, &self.client_id, &self.client_secret).await?;
         let req = client
-            .get(format!(
-                "{}/standard/v1/payments/{}",
-                self.environment,
-                id
-            ))
+            .get(format!("{}/standard/v1/payments/{}", self.environment, id))
             .bearer_auth(access_token.access_token)
             .header("Content-Type", "application/json")
             .header("X-Country", self.country.to_string())
