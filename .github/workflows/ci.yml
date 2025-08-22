@@ -68,7 +68,9 @@ jobs:
       if: matrix.rust == 'stable'
 
     - name: Check binary builds
-      run: cargo build --bin callback_server --verbose
+      run: |
+        cd airtel_money_callback_server
+        cargo build --verbose
 
   security:
     name: Security Audit

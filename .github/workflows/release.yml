@@ -59,7 +59,7 @@ jobs:
     - name: Build all targets
       run: |
         cargo build --release --all-features
-        cargo build --release --bin callback_server
+        cd airtel_money_callback_server && cargo build --release
 
     - name: Check documentation
       run: cargo doc --no-deps --all-features
@@ -115,16 +115,18 @@ jobs:
       run: sudo apt-get install -y musl-tools
 
     - name: Build callback server binary
-      run: cargo build --release --bin callback_server --target ${{ matrix.target }}
+      run: |
+        cd airtel_money_callback_server
+        cargo build --release --target ${{ matrix.target }}
 
     - name: Create archive
       shell: bash
       run: |
-        cd target/${{ matrix.target }}/release
+        cd airtel_money_callback_server/target/${{ matrix.target }}/release
         if [[ "${{ matrix.os }}" == "windows-latest" ]]; then
-          7z a ../../../callback_server-${{ matrix.target }}.zip callback_server.exe
+          7z a ../../../../airtel_money_callback_server-${{ matrix.target }}.zip airtel_money_callback_server.exe
         else
-          tar -czf ../../../callback_server-${{ matrix.target }}.tar.gz callback_server
+          tar -czf ../../../../airtel_money_callback_server-${{ matrix.target }}.tar.gz airtel_money_callback_server
         fi
 
     - name: Upload Release Asset
@@ -133,6 +135,6 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ needs.create-release.outputs.upload_url }}
-        asset_path: ./callback_server-${{ matrix.target }}.${{ matrix.os == 'windows-latest' && 'zip' || 'tar.gz' }}
-        asset_name: callback_server-${{ matrix.target }}.${{ matrix.os == 'windows-latest' && 'zip' || 'tar.gz' }}
+        asset_path: ./airtel_money_callback_server-${{ matrix.target }}.${{ matrix.os == 'windows-latest' && 'zip' || 'tar.gz' }}
+        asset_name: airtel_money_callback_server-${{ matrix.target }}.${{ matrix.os == 'windows-latest' && 'zip' || 'tar.gz' }}
         asset_content_type: application/octet-stream

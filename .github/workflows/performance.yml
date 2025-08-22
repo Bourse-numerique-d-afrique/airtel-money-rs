@@ -208,26 +208,28 @@ jobs:
       run: cargo install cargo-bloat
 
     - name: Build release binary
-      run: cargo build --release --bin callback_server
+      run: |
+        cd airtel_money_callback_server
+        cargo build --release
 
     - name: Analyze binary size
       run: |
         echo "Binary size:"
-        ls -lh target/release/callback_server
+        ls -lh airtel_money_callback_server/target/release/airtel_money_callback_server
         
         echo "Size breakdown:"
-        cargo bloat --release --bin callback_server -n 20
+        cd airtel_money_callback_server && cargo bloat --release --bin airtel_money_callback_server -n 20
 
     - name: Create size report
       run: |
         echo "# Binary Size Report" > size_report.md
         echo "" >> size_report.md
         echo "## Total Size" >> size_report.md
-        ls -lh target/release/callback_server | awk '{print "- Size: " $5}' >> size_report.md
+        ls -lh airtel_money_callback_server/target/release/airtel_money_callback_server | awk '{print "- Size: " $5}' >> size_report.md
         echo "" >> size_report.md
         echo "## Top Dependencies by Size" >> size_report.md
         echo '```' >> size_report.md
-        cargo bloat --release --bin callback_server -n 10 >> size_report.md
+        cd airtel_money_callback_server && cargo bloat --release --bin airtel_money_callback_server -n 10 >> size_report.md
         echo '```' >> size_report.md
 
     - name: Upload size analysis
