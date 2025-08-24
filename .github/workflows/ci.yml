@@ -105,6 +105,14 @@ jobs:
 
     - name: Generate code coverage
       run: cargo llvm-cov --all-features --workspace --lcov --output-path lcov.info
+      env:
+        AIRTEL_CLIENT_ID: ${{ secrets.AIRTEL_CLIENT_ID }}
+        AIRTEL_CLIENT_SECRET: ${{ secrets.AIRTEL_CLIENT_SECRET }}
+        AIRTEL_ENVIRONMENT: ${{ secrets.AIRTEL_ENVIRONMENT }}
+        AIRTEL_MERCHANT_CODE: ${{ secrets.AIRTEL_MERCHANT_CODE }}
+        AIRTEL_APPLICATION_NAME: ${{ secrets.AIRTEL_APPLICATION_NAME }}
+        AIRTEL_PIN: ${{ secrets.AIRTEL_PIN }}
+        AIRTEL_AUTH_CALLBACK_HASH: ${{ secrets.AIRTEL_AUTH_CALLBACK_HASH }}
 
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v4
