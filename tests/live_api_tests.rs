@@ -1,5 +1,5 @@
 use airtel_rs::{AirtelMoney, Country, Currency, Environment};
-use dotenv::dotenv;
+use dotenvy::dotenv;
 use std::env;
 use uuid::Uuid;
 

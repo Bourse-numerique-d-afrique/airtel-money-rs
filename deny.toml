@@ -6,10 +6,7 @@
 # https://embarkstudios.github.io/cargo-deny/checks/advisories/cfg.html
 [advisories]
 # A list of advisory IDs to ignore
-ignore = [
-    # Ignore the dotenv unmaintained advisory since we're using it in a limited way
-    "RUSTSEC-2021-0141",
-]
+ignore = []
 
 # This section is considered when running `cargo deny check licenses`
 # More documentation for the licenses section can be found here:

@@ -257,7 +257,7 @@ pub fn create_routes(
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Initialize environment variables if .env file exists
-    if let Err(_) = dotenv::dotenv() {
+    if let Err(_) = dotenvy::dotenv() {
         // .env file doesn't exist, which is fine
     }
 
