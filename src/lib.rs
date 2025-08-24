@@ -1,4 +1,6 @@
 //! Airtel Money Rust SDK
+
+#![forbid(unsafe_code)]
 //!
 //! A comprehensive Rust SDK for integrating with the Airtel Money API.
 //! This SDK provides easy-to-use interfaces for all Airtel Money services

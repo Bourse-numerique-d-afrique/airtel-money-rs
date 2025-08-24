@@ -1,3 +1,5 @@
+#![forbid(unsafe_code)]
+
 use airtel_rs::{AirtelMoney, Country, Environment};
 
 #[tokio::main]

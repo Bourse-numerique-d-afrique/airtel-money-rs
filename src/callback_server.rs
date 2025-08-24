@@ -1,4 +1,6 @@
 //! Airtel Money Callback Server
+
+#![forbid(unsafe_code)]
 //!
 //! A production-ready callback server for handling Airtel Money payment callbacks.
 //! This server provides HTTP endpoints for receiving webhook notifications and
