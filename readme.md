@@ -22,15 +22,16 @@ A comprehensive Rust SDK for the Airtel Money API, supporting both Sandbox and P
 - 🏦 **Account Management** - Balance inquiries
 - 💵 **Cash In/Out** - Agent cash transactions
 - 🌍 **Remittances** - International money transfers
-- 🔄 **Callback Server** - Standalone webhook server for payment notifications
+- 🔄 **Callback Server** - Integrated webhook server with TLS support for payment notifications
 
 ✅ **Multi-Country Support**: 14+ African countries supported
 ✅ **Type-Safe**: Fully typed request/response structures
 ✅ **Async/Await**: Modern async Rust with tokio
 ✅ **Automatic Token Management**: OAuth2 token refresh handling
+✅ **Stream-based Callbacks**: Process webhooks as async streams
+✅ **TLS/HTTPS Support**: Production-ready secure callback server
 ✅ **Comprehensive Testing**: Unit and integration tests included
 ✅ **Production Ready**: Built with error handling and proper logging
-✅ **Installable Binary**: Callback server can be installed with `cargo install`
 
 ## Supported Countries & Currencies
 
@@ -138,38 +139,171 @@ let status = remittance.money_transfer_status(ext_tr_id).await?;
 
 ## Callback Server
 
-The SDK includes a standalone callback server for handling Airtel Money webhook notifications:
+The SDK includes an integrated callback server feature for handling Airtel Money webhook notifications as a stream of events:
 
-### Installation
+### Enable the Feature
 
-```bash
-# Install the callback server binary
-cargo install --path airtel_money_callback_server
-
-# Or build directly
-cd airtel_money_callback_server
-cargo build
+```toml
+[dependencies]
+airtel_rs = { version = "*", features = ["callback_server"] }
+futures-util = "0.3"
 ```
 
-### Usage
+### Basic HTTP Server
+
+```rust
+use airtel_rs::callback_server::{start_callback_server, CallbackServerConfig};
+use futures_util::StreamExt;
+
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    // Configure the callback server
+    let config = CallbackServerConfig {
+        host: "0.0.0.0".to_string(),
+        port: 8080,
+        webhook_secret: Some("your_webhook_secret".to_string()),
+        cert_path: None,  // HTTP for development
+        key_path: None,
+    };
+
+    // Start the server and get a stream of callbacks
+    let callback_stream = start_callback_server(config).await?;
+    futures_util::pin_mut!(callback_stream);
+
+    println!("🚀 Callback server started on http://0.0.0.0:8080");
+    println!("📡 Endpoints: POST /webhooks/airtel, GET /health");
+
+    // Process callbacks as they arrive
+    while let Some(update) = callback_stream.next().await {
+        println!("📥 Received callback: {:?}", update.callback_type);
+        
+        match update.response.transaction.status.as_str() {
+            "SUCCESS" => {
+                println!("✅ Payment successful: {} {}", 
+                    update.response.amount, update.response.currency);
+                // Update database, send notifications, etc.
+                process_successful_payment(&update).await;
+            }
+            "FAILED" => {
+                println!("❌ Payment failed: {}", 
+                    update.response.transaction.id);
+                // Handle failure, notify customer, etc.
+                process_failed_payment(&update).await;
+            }
+            "PENDING" => {
+                println!("🔄 Payment pending: {}", 
+                    update.response.transaction.id);
+                // Monitor payment status
+            }
+            _ => {
+                println!("❓ Unknown status: {}", 
+                    update.response.transaction.status);
+            }
+        }
+    }
+
+    Ok(())
+}
+
+async fn process_successful_payment(update: &airtel_rs::AirtelUpdates) {
+    // Your business logic here
+    println!("Processing successful payment for transaction: {}", 
+        update.response.transaction.id);
+    
+    // Example: Update database
+    // database::update_payment_status(&update.response.transaction.id, "completed").await;
+    
+    // Example: Send confirmation email
+    // email::send_payment_confirmation(&update.response.reference).await;
+    
+    // Example: Fulfill order
+    // orders::process_order(&update.response.transaction.id).await;
+}
+
+async fn process_failed_payment(update: &airtel_rs::AirtelUpdates) {
+    // Your failure handling logic here
+    println!("Processing failed payment for transaction: {}", 
+        update.response.transaction.id);
+    
+    // Example: Update database
+    // database::update_payment_status(&update.response.transaction.id, "failed").await;
+    
+    // Example: Notify customer
+    // notifications::send_failure_notification(&update.response.reference).await;
+}
+```
+
+### HTTPS/TLS Server (Production)
+
+```rust
+use airtel_rs::callback_server::{start_callback_server, CallbackServerConfig};
+
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    // HTTPS configuration for production
+    let config = CallbackServerConfig {
+        host: "0.0.0.0".to_string(),
+        port: 443,
+        webhook_secret: Some("production_webhook_secret".to_string()),
+        cert_path: Some("/path/to/cert.pem".to_string()),
+        key_path: Some("/path/to/key.pem".to_string()),
+    };
+
+    // Alternative: Use builder pattern
+    // let config = CallbackServerConfig::https_default()
+    //     .with_tls("cert.pem".to_string(), "key.pem".to_string());
+
+    let callback_stream = start_callback_server(config).await?;
+    futures_util::pin_mut!(callback_stream);
+
+    println!("🔒 Secure HTTPS callback server started on port 443");
+    
+    // Process callbacks with enhanced security
+    while let Some(update) = callback_stream.next().await {
+        // All communications are now encrypted with TLS
+        process_secure_callback(update).await;
+    }
+
+    Ok(())
+}
+```
+
+### Environment Configuration
 
 ```bash
-# Set environment variables
-export CALLBACK_PORT=8080
+# Basic HTTP setup
 export CALLBACK_HOST=0.0.0.0
+export CALLBACK_PORT=8080
 export AIRTEL_WEBHOOK_SECRET=your_webhook_secret
 
-# Run the server
-cd airtel_money_callback_server
-cargo run
+# HTTPS/TLS setup (production)
+export TLS_CERT_PATH=/path/to/cert.pem
+export TLS_KEY_PATH=/path/to/key.pem
+export CALLBACK_PORT=443
+```
+
+Then use:
+```rust
+// Automatically uses environment variables
+let config = CallbackServerConfig::default();
+let callback_stream = start_callback_server(config).await?;
 ```
 
 ### Available Endpoints
 
 - `POST /webhooks/airtel` - Receives Airtel Money callbacks
-- `GET /health` - Health check endpoint
+- `GET /health` - Health check endpoint (returns JSON with status and version)
 
-The callback server automatically processes payment status updates and can be customized to integrate with your application's business logic.
+### Key Features
+
+- **🔄 Stream-based**: Process callbacks as async stream of events
+- **🔒 TLS Support**: Production-ready HTTPS with certificate validation
+- **⚙️ Flexible Config**: Environment variables, builder patterns, or direct configuration  
+- **🛡️ Type Safety**: Strongly-typed callback structures
+- **📊 Health Monitoring**: Built-in health check endpoint
+- **🔧 Production Ready**: Comprehensive error handling and logging
+
+For more examples, see [`examples/callback_server_usage.rs`](examples/callback_server_usage.rs) and [`examples/callback_server_tls.rs`](examples/callback_server_tls.rs).
 
 ## Environment Setup
 
@@ -188,6 +322,9 @@ The SDK includes comprehensive test suites:
 ```bash
 # Run basic unit tests
 cargo test
+
+# Run callback server tests
+cargo test callback_server --features callback_server
 
 # Run SDK functionality demo tests
 cargo test --test mock_demo_tests -- --nocapture
@@ -242,7 +379,12 @@ cargo test --test diagnostic_test -- --nocapture
 Check the `examples/` directory for more detailed usage:
 
 ```bash
+# Basic SDK usage
 cargo run --example basic_usage
+
+# Callback server examples
+cargo run --example callback_server_usage --features callback_server
+cargo run --example callback_server_tls --features callback_server
 ```
 
 ## API Documentation
@@ -257,11 +399,19 @@ All API methods return properly typed responses that match the Airtel Money API 
 
 ## Dependencies
 
+### Core Dependencies
 - `reqwest` - HTTP client
 - `serde` - JSON serialization
 - `tokio` - Async runtime
 - `chrono` - Date/time handling
 - `uuid` - Unique ID generation
+
+### Callback Server Dependencies (optional, with `callback_server` feature)
+- `warp` - Web framework for HTTP server
+- `tokio-rustls` - TLS/HTTPS support
+- `rustls` - Pure Rust TLS implementation
+- `async-stream` - Async stream utilities
+- `env_logger` - Logging support
 
 ## License
 

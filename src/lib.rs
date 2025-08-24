@@ -150,6 +150,9 @@ mod products;
 mod requests;
 mod responses;
 
+#[cfg(feature = "callback_server")]
+pub mod callback_server;
+
 // Re-exports for convenient access
 pub use client::ApiClient;
 pub use config::ProductConfig;
@@ -169,6 +172,13 @@ pub use responses::token_response::TokenResponse;
 // Common types re-exports
 pub use common::{
     AdditionalInfo, ApiStatus, EnhancedSubscriber, Subscriber, Transaction, TransactionData,
+};
+
+// Callback server re-exports (only when feature is enabled)
+#[cfg(feature = "callback_server")]
+pub use callback_server::{
+    start_callback_server, AirtelUpdates, CallbackPayload, CallbackServerConfig,
+    CallbackTransaction, CallbackType, HealthResponse,
 };
 
 /// Main entry point for the Airtel Money SDK
