@@ -1,5 +1,6 @@
 /// Configuration module for shared product configuration and settings
-use crate::{Country, Currency, Environment};
+use crate::{AirtelError, AirtelResult, Country, Currency, Environment};
+use std::env;
 
 /// Shared configuration for all Airtel Money product modules
 ///
@@ -110,5 +111,95 @@ impl ProductConfig {
     /// Used for setting the X-Currency header in API requests
     pub fn currency_code(&self) -> String {
         self.currency.to_string()
+    }
+
+    /// Loads configuration from environment variables
+    ///
+    /// Reads required environment variables and validates their presence.
+    /// Required variables:
+    /// - AIRTEL_ENVIRONMENT: "sandbox" or "production"
+    /// - AIRTEL_COUNTRY: ISO 2-letter country code
+    /// - AIRTEL_CLIENT_ID: OAuth2 client ID
+    /// - AIRTEL_CLIENT_SECRET: OAuth2 client secret
+    ///
+    /// # Errors
+    ///
+    /// Returns `AirtelError::MissingEnvironmentVariable` if any required variable is missing,
+    /// or `AirtelError::ConfigurationError` if values are invalid.
+    pub fn from_env() -> AirtelResult<Self> {
+        dotenvy::dotenv().ok();
+
+        let environment = env::var("AIRTEL_ENVIRONMENT")
+            .map_err(|_| AirtelError::MissingEnvironmentVariable {
+                variable: "AIRTEL_ENVIRONMENT".to_string(),
+            })?
+            .parse()?;
+
+        let country = env::var("AIRTEL_COUNTRY")
+            .map_err(|_| AirtelError::MissingEnvironmentVariable {
+                variable: "AIRTEL_COUNTRY".to_string(),
+            })?
+            .parse()?;
+
+        let currency = Country::currency_for(&country)?;
+
+        let client_id =
+            env::var("AIRTEL_CLIENT_ID").map_err(|_| AirtelError::MissingEnvironmentVariable {
+                variable: "AIRTEL_CLIENT_ID".to_string(),
+            })?;
+
+        let client_secret = env::var("AIRTEL_CLIENT_SECRET").map_err(|_| {
+            AirtelError::MissingEnvironmentVariable {
+                variable: "AIRTEL_CLIENT_SECRET".to_string(),
+            }
+        })?;
+
+        Ok(Self {
+            country,
+            currency,
+            environment,
+            client_id,
+            client_secret,
+        })
+    }
+}
+
+impl std::str::FromStr for Environment {
+    type Err = AirtelError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s.to_lowercase().as_str() {
+            "sandbox" => Ok(Environment::Sandbox),
+            "production" => Ok(Environment::Production),
+            _ => Err(AirtelError::ConfigurationError {
+                message: format!("Invalid environment: {}. Use 'sandbox' or 'production'", s),
+            }),
+        }
+    }
+}
+
+impl std::str::FromStr for Country {
+    type Err = AirtelError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s.to_uppercase().as_str() {
+            "KE" => Ok(Country::Kenya),
+            "UG" => Ok(Country::Uganda),
+            "TZ" => Ok(Country::Tanzania),
+            "MG" => Ok(Country::Madagascar),
+            "CD" => Ok(Country::DRC),
+            "ZM" => Ok(Country::Zambia),
+            "SC" => Ok(Country::Seychelles),
+            "RW" => Ok(Country::Rwanda),
+            "MW" => Ok(Country::Malawi),
+            "NG" => Ok(Country::Nigeria),
+            "NE" => Ok(Country::Niger),
+            "TD" => Ok(Country::Chad),
+            "GA" => Ok(Country::Gabon),
+            "CG" => Ok(Country::CongoB),
+            _ => Err(AirtelError::ConfigurationError {
+                message: format!("Invalid country code: {}", s),
+            }),
+        }
     }
 }

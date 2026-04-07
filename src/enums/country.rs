@@ -1,5 +1,6 @@
 use core::fmt;
 
+use crate::{AirtelError, AirtelResult, Currency};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize, Clone, Copy, PartialEq, Eq, Hash)]
@@ -37,6 +38,28 @@ impl fmt::Display for Country {
             Country::CongoB => write!(f, "CG"),
             Country::Seychelles => write!(f, "SC"),
             Country::Nigeria => write!(f, "NG"),
+        }
+
+        impl Country {
+            /// Returns the default currency for a given country
+            pub fn currency_for(country: &Country) -> AirtelResult<Currency> {
+                Ok(match country {
+                    Country::Uganda => Currency::UGX,
+                    Country::Kenya => Currency::KES,
+                    Country::Tanzania => Currency::TZS,
+                    Country::Madagascar => Currency::MGA,
+                    Country::DRC => Currency::CDF,
+                    Country::Zambia => Currency::ZMW,
+                    Country::Seychelles => Currency::SCR,
+                    Country::Rwanda => Currency::RWF,
+                    Country::Malawi => Currency::MWK,
+                    Country::Nigeria => Currency::NGN,
+                    Country::Niger => Currency::XOF,
+                    Country::Chad => Currency::XAF,
+                    Country::Gabon => Currency::XAF,
+                    Country::CongoB => Currency::XAF,
+                })
+            }
         }
     }
 }

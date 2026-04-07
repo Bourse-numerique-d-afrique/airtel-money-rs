@@ -6,10 +6,15 @@
 use crate::{
     authorization::get_valid_access_token,
     config::ProductConfig,
-    errors::{api_error, auth_error, AirtelResult},
+    errors::{api_error, auth_error, AirtelResult, AirtelError},
 };
-use reqwest::{Client, Response};
+use reqwest::{Client, Response, ClientBuilder};
 use serde::{Deserialize, Serialize};
+use backoff::{future::retry, ExponentialBackoff};
+use circuit_breaker::{CircuitBreaker, State};
+use governor::{Quota, RateLimiter, clock::DefaultClock, state::InMemoryState, middleware::NoOpMiddleware};
+use std::{time::Duration, sync::Arc};
+use nonzero_ext::nonzero;
 
 /// Centralized HTTP client for Airtel Money API operations
 ///
@@ -32,12 +37,20 @@ use serde::{Deserialize, Serialize};
 ///
 /// let client = ApiClient::new(config);
 /// ```
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct ApiClient {
     /// Product configuration containing credentials and settings
     config: ProductConfig,
-    /// Underlying HTTP client
+    /// Underlying HTTP client with proper timeouts
     client: Client,
+    /// Rate limiter for API requests (100 requests per minute)
+    rate_limiter: Arc<RateLimiter<InMemoryState, DefaultClock, NoOpMiddleware>>,
+    /// Circuit breaker for downstream failure protection
+    circuit_breaker: Arc<CircuitBreaker>,
+    /// Exponential backoff configuration for retries
+    backoff: ExponentialBackoff,
+    /// Request timeout duration
+    request_timeout: Duration,
 }
 
 impl ApiClient {
